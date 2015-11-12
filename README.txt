@@ -13,6 +13,12 @@ sigma = 1.5
 timestep size = 0.2
 no of iterations = 125
 
+out2.pgm
+lambda = 2
+sigma = 0.1
+timestep size = 0.2
+no of iterations = 125
+
 b)
 Sigma is the gaussian smoothing applied to image before calculating the gradient. Increasing sigma increases the smoothness of image
 before diffusion is applied. This leads to faster convergence to equilibrium state during diffusion.
@@ -21,3 +27,6 @@ Lambda is a contrast parameter. It is used to decide how to penalize the gradien
 the gradient. This is used to preserve edges for longer diffusion times.
 
 c)
+Perona malik preserves edges better than chabonnier.
+
+d)
