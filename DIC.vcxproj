@@ -10,6 +10,9 @@
       <Platform>Win32</Platform>
     </ProjectConfiguration>
   </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="isonondiff.c" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{8366481A-817E-4790-AB5C-739BAF5A6937}</ProjectGuid>
     <RootNamespace>DIC</RootNamespace>
@@ -64,9 +67,6 @@
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
   </ItemDefinitionGroup>
-  <ItemGroup>
-    <ClCompile Include="Ex02\lindiff.c" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

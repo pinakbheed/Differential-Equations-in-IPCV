@@ -15,7 +15,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Ex02\lindiff.c">
+    <ClCompile Include="isonondiff.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
