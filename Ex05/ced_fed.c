@@ -3,21 +3,26 @@
 #include <string.h>
 #include <math.h>
 #include <stdarg.h>
+#include <limits.h>
+#include "FED/fed.h"
 
 
 /*--------------------------------------------------------------------------*/
 /*                                                                          */
-/*                 ISOTROPIC NONLINEAR DIFFUSION FILTERING                  */
+/*           COHERENCE-ENHANCING ANISOTROPIC DIFFUSION FILTERING            */
+/*                     with FAST EXPLICIT DIFFUSION                         */
 /*                                                                          */
-/*                 (Copyright by Joachim Weickert, 8/2014)                  */
+/*                 (Copyright by Joachim Weickert 8/2014)                   */
 /*                                                                          */
 /*--------------------------------------------------------------------------*/
 
 
 /* 
  features:
- - explicit scheme
+ - fast explicit diffusion
+ - standard discretization of mixed derivatives
  - presmoothing at noise scale:  convolution-based, Neumann b.c.
+ - presmoothing at integration scale: convolution-based, Dirichlet b.c.
 */
 
 
@@ -516,119 +521,339 @@ return;
 
 } /* gauss_conv */
 
-/*--------------------------------------------------------------------------*/
+/* ------------------------------------------------------------------------ */
 
-void isonondiff 
+void struct_tensor 
 
-     (long     nx,        /* image dimension in x direction */ 
-      long     ny,        /* image dimension in y direction */ 
-      float    ht,        /* time step size, 0 < ht < 0.25 */
+     (float    **v,       /* image !! gets smoothed on exit !! */
+      long     nx,        /* image dimension in x direction */
+      long     ny,        /* image dimension in y direction */
       float    hx,        /* pixel size in x direction */
       float    hy,        /* pixel size in y direction */
-      float    lambda,    /* contrast parameter */
       float    sigma,     /* noise scale */
-      float    **u)       /* input: original image;  output: smoothed */
+      float    rho,       /* integration scale */
+      float    **dxx,     /* element of structure tensor, output */
+      float    **dxy,     /* element of structure tensor, output */
+      float    **dyy)     /* element of structure tensor, output */
 
-/* 
- Isotropic nonlinear diffusion. 
- Explicit discretization.
+/*
+ Calculates the structure tensor.
 */
 
 {
-long    i, j;             /* loop variables */
-float   rxx, ryy;         /* time savers */
-float   **f;              /* work copy of u */
-float   **dc;             /* diffusion coefficient */
-float   df_dx, df_dy;     /* derivatives */
-float   two_hx, two_hy;   /* time savers */
-float   grad;             /* |grad(v)| */
-      
-
-/* ---- allocate storage for f and dc ---- */
-
-alloc_matrix (&f,  nx+2, ny+2);
-alloc_matrix (&dc, nx+2, ny+2);
+long    i, j;                 /* loop variables */
+float   dv_dx, dv_dy;         /* derivatives of v */
+float   two_hx, two_hy;       /* time savers */
 
 
-/* ---- copy u into f ---- */
+/* ---- smoothing at noise scale, reflecting b.c. ---- */
 
-for (i=1; i<=nx; i++)
- for (j=1; j<=ny; j++)
-     f[i][j] = u[i][j];
-
-
-/* ---- regularize f ---- */
-
-if (sigma > 0.0)
-   gauss_conv (sigma, nx, ny, hx, hy, 3.0, 1, f);
+if (sigma > 0.0) 
+   gauss_conv (sigma, nx, ny, hx, hy, 3.0, 1, v);  
 
 
-/* ---- create dummy boundaries for f by mirroring ---- */
+/* ---- building tensor product ---- */
 
-dummies (f, nx, ny);
 two_hx = 2.0 * hx;
 two_hy = 2.0 * hy;
+dummies (v, nx, ny);
 
 for (i=1; i<=nx; i++)
  for (j=1; j<=ny; j++)
      {
-     /* calculate grad(f) */
-/*
-SUPPLEMENT CODE
-*/
-
-	 df_dx = (f[i + 1][j] - f[i][j]) / hx;
-	 df_dy = (f[i][j + 1] - f[i][j]) / hy;
-
-	 grad = sqrt((df_dx)*(df_dx)+(df_dy)*(df_dy));
-
-	 /*
-	 SUPPLEMENT CODE
-	 */
-	 
-	 /* calculate diffusivity dc */
-	 //perona malik
-	 //dc[i][j] = 1 / (1 + ((grad*grad) / (lambda*lambda)));
-
-	 //chabonnier 
-	 dc[i][j] = 1 / sqrt(1 + ((grad*grad) / (lambda*lambda)));
-
+     dv_dx = (v[i+1][j] - v[i-1][j]) / two_hx;
+     dv_dy = (v[i][j+1] - v[i][j-1]) / two_hy;
+     dxx[i][j] = dv_dx * dv_dx; 
+     dxy[i][j] = dv_dx * dv_dy; 
+     dyy[i][j] = dv_dy * dv_dy; 
      }
 
 
-/* ---- calculate explicit nonlinear diffusion of u ---- */
+/* ---- smoothing at integration scale, Dirichlet b.c. ---- */
 
-/* copy u into f */
-for (i=1; i<=nx; i++)
- for (j=1; j<=ny; j++)
-     f[i][j] = u[i][j];
-
-
-/* ---- create dummy boundaries for f and dc by mirroring ---- */
-
-dummies (f,  nx, ny);
-dummies (dc, nx, ny);
-
-/* diffuse */
-rxx = ht / (2.0 * hx * hx);
-ryy = ht / (2.0 * hy * hy);
-for (i=1; i<=nx; i++)
- for (j=1; j<=ny; j++)
-     u[i][j] = f[i][j] 
-        + rxx * ( (dc[i+1][j] + dc[i][j]) * (f[i+1][j] - f[i][j])
-                + (dc[i-1][j] + dc[i][j]) * (f[i-1][j] - f[i][j]) )
-        + ryy * ( (dc[i][j+1] + dc[i][j]) * (f[i][j+1] - f[i][j])
-                + (dc[i][j-1] + dc[i][j]) * (f[i][j-1] - f[i][j]) );
-
-
-/* ---- disallocate storage for f and dc ---- */
-
-disalloc_matrix (f,  nx+2, ny+2);
-disalloc_matrix (dc, nx+2, ny+2);
+if (rho > 0.0)
+   {
+   gauss_conv (rho, nx, ny, hx, hy, 3.0, 0, dxx);
+   gauss_conv (rho, nx, ny, hx, hy, 3.0, 0, dxy);
+   gauss_conv (rho, nx, ny, hx, hy, 3.0, 0, dyy);
+   }
 
 return;
 
-} /* isonondiff */
+} /* struct_tensor */
+
+/* ------------------------------------------------------------------------ */
+
+void PA_trans 
+
+     (float a11,        /* coeffs of (2*2)-matrix */ 
+      float a12,        /* coeffs of (2*2)-matrix */ 
+      float a22,        /* coeffs of (2*2)-matrix */ 
+      float *c,         /* 1. comp. of 1. eigenvector, output */ 
+      float *s,         /* 2. comp. of 1. eigenvector, output */ 
+      float *lam1,      /* larger  eigenvalue, output */
+      float *lam2)      /* smaller eigenvalue, output */
+
+/*
+ Principal axis transformation. 
+*/
+
+{
+float  help, norm;    /* time savers */ 
+
+/* eigenvalues */
+help  = sqrt (pow(a22-a11, 2.0) + 4.0 * a12 * a12);
+*lam1 = (a11 + a22 + help) / 2.0; 
+*lam2 = (a11 + a22 - help) / 2.0; 
+
+/* eigenvectors */
+*c = 2.0 * a12;
+*s = a22 - a11 + help;
+
+/* normalize eigenvectors */
+norm = sqrt (*c * *c + *s * *s);
+if (norm >= 0.0000001) 
+   {
+   *c = *c / norm;   
+   *s = *s / norm;   
+   }
+else  
+   {
+   *c = 1.0;
+   *s = 0.0;
+   }
+return;
+
+} /* PA_trans */
+
+/* ----------------------------------------------------------------------- */
+
+void PA_backtrans 
+
+     (float  c,      /* 1. comp. of 1. eigenvector */ 
+      float  s,      /* 2. comp. of 1. eigenvector */ 
+      float  lam1,   /* 1. eigenvalue */ 
+      float  lam2,   /* 2. eigenvalue */ 
+      float  *a11,   /* coeff. of (2*2)-matrix, output */ 
+      float  *a12,   /* coeff. of (2*2)-matrix, output */ 
+      float  *a22)   /* coeff. of (2*2)-matrix, output */ 
+
+/*
+ Principal axis backtransformation of a symmetric (2*2)-matrix. 
+ A = U * diag(lam1, lam2) * U_transpose with U = (v1 | v2)     
+ v1 = (c, s) is first eigenvector
+*/
+
+{
+
+*a11 = c * c * lam1 + s * s * lam2;
+*a22 = lam1 + lam2 - *a11;             /* trace invariance */
+*a12 = c * s * (lam1 - lam2);
+
+return;
+
+} /* PA_backtrans */
+
+/*--------------------------------------------------------------------------*/
+
+void diff_tensor 
+     
+     (float    C,        /* coherence parameter */
+      float    alpha,    /* linear diffusion fraction */
+      long     nx,       /* image dimension in x direction */
+      long     ny,       /* image dimension in y direction */
+      float    **dxx,    /* in: structure tensor el., out: diff. tensor el. */
+      float    **dxy,    /* in: structure tensor el., out: diff. tensor el. */ 
+      float    **dyy)    /* in: structure tensor el., out: diff. tensor el. */ 
+
+/*
+ Calculates the diffusion tensor of CED by means of the structure tensor.
+*/
+
+{
+long    i, j;          /* loop variables */
+float   beta;          /* time saver */
+float   c, s;          /* specify first eigenvector */
+float   mu1, mu2;      /* eigenvalues of structure tensor */
+float   lam1, lam2;    /* eigenvalues of diffusion tensor */
+
+beta = 1.0 - alpha;
+
+for (i=1; i<=nx; i++)
+ for (j=1; j<=ny; j++)
+     {
+     /* principal axis transformation */
+     PA_trans (dxx[i][j], dxy[i][j], dyy[i][j], &c, &s, &mu1, &mu2);
+
+     /* calculate eigenvalues */
+     lam1 = alpha;
+     lam2 = alpha + beta * exp (- C / pow (mu1-mu2, 2.0));
+
+     /* principal axis backtransformation */
+     PA_backtrans (c, s, lam1, lam2, &dxx[i][j], &dxy[i][j], &dyy[i][j]);  
+     }
+
+return;
+
+}  /* diff_tensor */
+
+/*--------------------------------------------------------------------------*/
+
+void cediff 
+
+     (long     nx,        /* image dimension in x direction */ 
+      long     ny,        /* image dimension in y direction */ 
+      float    T,         /* overall stopping time */
+      long     M,         /* number of FED cycles */
+      float    hx,        /* pixel size in x direction */
+      float    hy,        /* pixel size in y direction */
+      float    C,         /* coherence parameter */
+      float    sigma,     /* noise scale */
+      float    rho,       /* integration scale */
+      float    alpha,     /* linear diffusion fraction */
+      float    **u)       /* input: original image;  output: smoothed */
+
+/* 
+ Coherence-enhancing anisotropic diffusion. 
+ Fast Explicit Diffusion.
+*/
+
+{
+long    i, j;                 /* loop variables */
+float   rxx, rxy, ryy;        /* time savers */
+float   wN, wNE, wE, wSE;     /* weights */
+float   wS, wSW, wW, wNW;     /* weights */
+float   **f;                  /* work copy of u */
+float   **dxx, **dxy, **dyy;  /* entries of structure/diffusion tensor */
+float   *tau;                 /* Vector of FED time step sizes */
+int     N;                    /* Number of steps */
+int     n,m;                  /* Loop counters over steps, cycles */
+
+
+/* ---- allocate storage for f and diffusion tensor entries ---- */
+
+alloc_matrix (&f,   nx+2, ny+2);
+alloc_matrix (&dxx, nx+2, ny+2);
+alloc_matrix (&dxy, nx+2, ny+2);
+alloc_matrix (&dyy, nx+2, ny+2);
+
+
+/* Initialise step sizes for process with                        */
+/* - overall stopping time T                                     */
+/* - number of cycles M                                          */
+/* - stability limit for 2-D linear diffusion: 0.25              */
+N = fed_tau_by_process_time(T, M, 0.25f, 1, &tau);
+
+
+/* ---- Perform M outer cycles ---- */
+
+  for(m = 0; m < M; m++)
+     {
+     /* ---- copy u into f ---- */
+
+     for (i=1; i<=nx; i++)
+      for (j=1; j<=ny; j++)
+          f[i][j] = u[i][j];
+
+
+     /* ---- calculate entries of structure tensor (alters f!!!) ---- */
+
+     struct_tensor (f, nx, ny, hx, hy, sigma, rho, dxx, dxy, dyy);
+
+
+     /* ---- calculate entries of diffusion tensor ---- */
+
+     diff_tensor (C, alpha, nx, ny, dxx, dxy, dyy);
+     
+     /* assign dummy boundaries */
+     dummies (dxx, nx, ny);
+     dummies (dxy, nx, ny);
+     dummies (dyy, nx, ny);
+
+
+     /* ---- Each cycle performs N steps with varying step size ---- */
+     
+     for(n = 0; n < N; n++)
+        {
+        rxx  = tau[n] / (2.0 * hx * hx);
+        ryy  = tau[n] / (2.0 * hy * hy);
+        rxy  = tau[n] / (4.0 * hx * hy);
+
+
+        /* copy u into f and assign dummy boundaries */
+        for (i=1; i<=nx; i++)
+         for (j=1; j<=ny; j++)
+             f[i][j] = u[i][j];
+        dummies (f, nx, ny);
+
+
+        /* ---- calculate explicit nonlinear diffusion of u ---- */
+        for (i=1; i<=nx; i++)
+         for (j=1; j<=ny; j++)
+             {
+             /* weights */
+             wE  =   rxx * (dxx[i+1][j]   + dxx[i][j]);
+             wW  =   rxx * (dxx[i-1][j]   + dxx[i][j]);
+             wS  =   ryy * (dyy[i][j+1]   + dyy[i][j]);
+             wN  =   ryy * (dyy[i][j-1]   + dyy[i][j]);
+             wSE =   rxy * (dxy[i+1][j+1] + dxy[i][j]);
+             wNW =   rxy * (dxy[i-1][j-1] + dxy[i][j]);
+             wNE = - rxy * (dxy[i+1][j-1] + dxy[i][j]);
+             wSW = - rxy * (dxy[i-1][j+1] + dxy[i][j]);
+
+             /* modify weights to prevent flux across boundaries */
+             if (i==1)  /* set western weights zero */
+                {
+                wSW = 0.0;
+                wW  = 0.0;
+                wNW = 0.0;
+                }
+             if (i==nx) /* set eastern weights zero */
+                {
+                wNE = 0.0;
+                wE  = 0.0;
+                wSE = 0.0;
+                }
+             if (j==1)  /* set northern weights zero */
+                {
+                wNW = 0.0;
+                wN  = 0.0;
+                wNE = 0.0;
+                }
+             if (j==ny) /* set southern weights zero */
+                {
+                wSE = 0.0;
+                wS  = 0.0; 
+                wSW = 0.0;
+                } 
+
+             /* evolution */
+             u[i][j] = f[i][j]  
+                     + wE  * (f[i+1][j]   - f[i][j]) 
+                     + wW  * (f[i-1][j]   - f[i][j]) 
+                     + wS  * (f[i][j+1]   - f[i][j]) 
+                     + wN  * (f[i][j-1]   - f[i][j])
+                     + wSE * (f[i+1][j+1] - f[i][j]) 
+                     + wNW * (f[i-1][j-1] - f[i][j]) 
+                     + wSW * (f[i-1][j+1] - f[i][j]) 
+                     + wNE * (f[i+1][j-1] - f[i][j]);
+             }
+        } /* for n steps */
+     } /* for m outer cycles*/
+
+
+/* ---- disallocate storage for f and diffusion tensor entries ---- */
+
+disalloc_matrix (f,   nx+2, ny+2);
+disalloc_matrix (dxx, nx+2, ny+2);
+disalloc_matrix (dxy, nx+2, ny+2);
+disalloc_matrix (dyy, nx+2, ny+2);
+
+printf ("number of iterations: %5ld \n", N*M);
+
+return;
+
+} /* cediff */
 
 /*--------------------------------------------------------------------------*/
 
@@ -684,28 +909,29 @@ int main ()
 char   in[80];               /* for reading data */
 char   out[80];              /* for reading data */
 float  **u;                  /* image */
-long   k;                    /* loop variable */
 long   nx, ny;               /* image size in x, y direction */ 
 float  sigma;                /* noise scale */
-float  lambda;               /* contrast parameter */
-float  ht;                   /* time step size, 0 < ht < 0.25 */
-long   kmax;                 /* largest iteration number */
+float  rho;                  /* integration scale */
+float  alpha;                /* linear diffusion fraction */
+float  C;                    /* coherence parameter */
 float  max, min;             /* largest, smallest grey value */
 float  mean;                 /* average grey value */
 float  std;                  /* standard deviation */
 char   comments[1600];       /* string for comments */
+long   M;                    /* number of FED cycles */
+float  T;                    /* stopping time */
 
 printf ("\n");
-printf ("ISOTROPIC NONLINEAR DIFFUSION FILTERING, EXPLICIT SCHEME\n\n");
-printf ("********************************************************\n\n");
-printf ("    Copyright 2014 by Joachim Weickert                  \n");
-printf ("    Dept. of Mathematics and Computer Science           \n");
-printf ("    Saarland University, Saarbruecken, Germany          \n\n");
-printf ("    All rights reserved. Unauthorized usage,            \n");
-printf ("    copying, hiring, and selling prohibited.            \n\n");
-printf ("    Send bug reports to                                 \n");
-printf ("    weickert@mia.uni-saarland.de                        \n\n");
-printf ("********************************************************\n\n");
+printf ("COHERENCE-ENHANCING ANISOTROPIC DIFFUSION, WITH FED SCHEME\n\n");
+printf ("**********************************************************\n\n");
+printf ("    Copyright 2014 by Joachim Weickert                      \n");
+printf ("    Dept. of Mathematics and Computer Science               \n");
+printf ("    Saarland University, Saarbruecken, Germany            \n\n");
+printf ("    All rights reserved. Unauthorized usage,                \n");
+printf ("    copying, hiring, and selling prohibited.              \n\n");
+printf ("    Send bug reports to                                     \n");
+printf ("    weickert@mia.uni-saarland.de                          \n\n");
+printf ("**********************************************************\n\n");
 
 
 /* ---- read input image (pgm format P5) ---- */
@@ -717,53 +943,50 @@ read_pgm_and_allocate_memory (in, &nx, &ny, &u);
 
 /* ---- read parameters ---- */
 
-printf ("contrast parameter lambda (>0) (float):  ");
-read_float (&lambda);
+printf ("overall stopping time T (>0) (float):    ");
+read_float (&T);
 
-printf ("noise scale sigma (>=0) (float):         ");
-read_float (&sigma);
-
-printf ("time step size (<0.25) (float):          ");
-read_float (&ht);
-
-printf ("number of iterations (integer):          ");
-read_long (&kmax);
+printf ("number of FED cycles M (integer):        ");
+read_long (&M);
 
 printf ("output image (pgm):                      ");
 read_string (out);
 printf ("\n");
 
+/* initializations */
+C = 1;
+sigma = 0.5;
+alpha = 0.001;
+rho = 4;
+
 
 /* ---- process image ---- */
 
-for (k=1; k<=kmax; k++)
-    {
-    /* perform one iteration */
-    printf ("iteration number: %5ld \n", k);
-    isonondiff (nx, ny, ht, 1.0, 1.0, lambda, sigma, u);
+cediff (nx, ny, T, M, 1.0, 1.0, C, sigma, rho, alpha, u);
     
     
-    /* ---- analyse filtered image ---- */
+/* ---- analyse filtered image ---- */
 
-    /* check minimum, maximum, mean, standard deviation */
-    analyse (u, nx, ny, &min, &max, &mean, &std);
-    printf ("minimum:       %8.2f \n", min);
-    printf ("maximum:       %8.2f \n", max);
-    printf ("mean:          %8.2f \n", mean);
-    printf ("standard dev.: %8.2f \n\n", std);
-    }
+/* check minimum, maximum, mean, standard deviation */
+analyse (u, nx, ny, &min, &max, &mean, &std);
+printf ("minimum:           %8.2f \n", min);
+printf ("maximum:           %8.2f \n", max);
+printf ("mean:              %8.2f \n", mean);
+printf ("standard dev.:     %8.2f \n\n", std);
 
 
 /* ---- write output image (pgm format P5) ---- */
 
 /* generate comment string */
 comments[0]='\0';
-comment_line (comments, "# isotropic nonlinear diffusion filtering, explicit scheme\n");
+comment_line (comments, "# coherence-enhancing diffusion, fed scheme\n");
 comment_line (comments, "# initial image: %s\n", in);
-comment_line (comments, "# lambda:        %8.4f\n", lambda);
+comment_line (comments, "# C:             %8.4f\n", C);
 comment_line (comments, "# sigma:         %8.4f\n", sigma);
-comment_line (comments, "# ht:            %8.4f\n", ht);
-comment_line (comments, "# iterations:    %8ld\n", kmax);
+comment_line (comments, "# rho:           %8.4f\n", rho);
+comment_line (comments, "# alpha:         %8.4f\n", alpha);
+comment_line (comments, "# FED cycles:    %8ld\n", M);
+comment_line (comments, "# stopping time: %8.4f\n", T);
 comment_line (comments, "# min:           %8.4f\n", min);
 comment_line (comments, "# max:           %8.4f\n", max);
 comment_line (comments, "# mean:          %8.4f\n", mean);

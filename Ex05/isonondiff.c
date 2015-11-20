@@ -3,13 +3,15 @@
 #include <string.h>
 #include <math.h>
 #include <stdarg.h>
+#include <float.h>
 
 
 /*--------------------------------------------------------------------------*/
 /*                                                                          */
 /*                 ISOTROPIC NONLINEAR DIFFUSION FILTERING                  */
+/*        with the Decorrelation Criterion by Mrazek / Navara 2003          */
 /*                                                                          */
-/*                 (Copyright by Joachim Weickert, 8/2014)                  */
+/*   (Copyright by Markus Mainberger, 5/2009 and Joachim Weickert, 8/2014)  */
 /*                                                                          */
 /*--------------------------------------------------------------------------*/
 
@@ -18,6 +20,7 @@
  features:
  - explicit scheme
  - presmoothing at noise scale:  convolution-based, Neumann b.c.
+ - with the Decorrelation Criterion by Mrazek / Navara 2003 
 */
 
 
@@ -566,6 +569,9 @@ if (sigma > 0.0)
 /* ---- create dummy boundaries for f by mirroring ---- */
 
 dummies (f, nx, ny);
+
+/* ---- calculate diffusivity ---- */
+
 two_hx = 2.0 * hx;
 two_hy = 2.0 * hy;
 
@@ -573,26 +579,14 @@ for (i=1; i<=nx; i++)
  for (j=1; j<=ny; j++)
      {
      /* calculate grad(f) */
-/*
-SUPPLEMENT CODE
-*/
+     df_dx = (f[i+1][j]-f[i-1][j])/two_hx;
+     df_dy = (f[i][j+1]-f[i][j-1])/two_hy;
+     grad = sqrt(df_dx*df_dx+df_dy*df_dy);
 
-	 df_dx = (f[i + 1][j] - f[i][j]) / hx;
-	 df_dy = (f[i][j + 1] - f[i][j]) / hy;
+     /* calculate diffusivity dc */
 
-	 grad = sqrt((df_dx)*(df_dx)+(df_dy)*(df_dy));
-
-	 /*
-	 SUPPLEMENT CODE
-	 */
-	 
-	 /* calculate diffusivity dc */
-	 //perona malik
-	 //dc[i][j] = 1 / (1 + ((grad*grad) / (lambda*lambda)));
-
-	 //chabonnier 
-	 dc[i][j] = 1 / sqrt(1 + ((grad*grad) / (lambda*lambda)));
-
+     // Charbonnier diffusivity
+     dc[i][j] = 1.0 / sqrt(1.0 + (grad*grad) / pow(lambda,2.0) ) ;
      }
 
 
@@ -678,12 +672,151 @@ return;
 
 /*--------------------------------------------------------------------------*/
 
+float mean
+
+     (long     nx,         /* image dimension in x direction */
+      long     ny,         /* image dimension in y direction */
+      float    **f)        /* input: image */
+
+/*
+    computes the mean of f
+*/
+
+{
+float mean = 0.0f;
+
+/*
+SUPPLEMENT CODE
+*/
+
+return mean;
+}
+
+/* ------------------------------------------------------------------------ */
+
+float var
+
+     (long     nx,         /* image dimension in x direction */
+      long     ny,         /* image dimension in y direction */
+      float    **f)        /* input: image */
+
+/*
+    computes the variance of f
+*/
+
+{
+float var = 0.0f;
+
+/*
+SUPPLEMENT CODE
+*/
+
+return var;
+}
+
+/* ------------------------------------------------------------------------ */
+
+float cov
+
+     (long     nx,         /* image dimension in x direction */
+      long     ny,         /* image dimension in y direction */
+      float    **f,        /* input: 1st image */
+      float    **g)        /* input: 2nd image */
+
+/*
+    computes the covariance of f and g
+*/
+
+{
+float cov = 0.0f;
+
+/*
+SUPPLEMENT CODE
+*/
+
+return cov;
+}
+
+/* ------------------------------------------------------------------------ */
+
+float corr
+
+     (long     nx,         /* image dimension in x direction */
+      long     ny,         /* image dimension in y direction */
+      float    **f,        /* input: 1st image */
+      float    **g)        /* input: 2nd image */
+
+/*
+    computes the correlation coefficient of f and g
+*/
+
+{
+float corr = 0.0f;
+
+/*
+SUPPLEMENT CODE
+*/
+
+return corr;
+}
+
+/* ------------------------------------------------------------------------ */
+
+int stopping_criterion
+
+     (float    *c,         /* in:  modulus of previous corr. coefficient
+                              out: modulus of new corr. coefficient */
+      long     nx,         /* image dimension in x direction */
+      long     ny,         /* image dimension in y direction */
+      float    **f,        /* input: original image */
+      float    **u)        /* input: smoothed image */
+
+/*
+    computes the modulus of the correlation coefficient between the signal f 
+    and the removed noise f-u and checks if the result is even smaller
+    than the modulus of the previous correlation coefficient
+*/
+
+{
+int    i, j;         /* loop variables */
+int    stop;         /* boolean return value */
+float  **rn;         /* removed noise */
+float  new_c;        /* modulus of correlation coefficient */
+
+alloc_matrix (&rn, nx+2, ny+2);
+
+/* compute removed noise */
+for (i=1; i<=nx; i++)
+ for (j=1; j<=ny; j++)
+ {
+    /*
+    SUPPLEMENT CODE
+    */
+ }
+
+/* get the modulus of correlation coefficient */
+/*
+SUPPLEMENT CODE
+*/
+
+/* stop if modulus of new corr. coeff. is larger or equal to the prev. one */
+stop = (*c > new_c) ? 0 : 1;
+*c = new_c;
+
+disalloc_matrix (rn, nx+2, ny+2);
+
+return stop;
+}
+
+/*--------------------------------------------------------------------------*/
+
 int main ()
 
 {
 char   in[80];               /* for reading data */
 char   out[80];              /* for reading data */
-float  **u;                  /* image */
+float  **u;                  /* evolving image */
+float  **f;                  /* original image */
 long   k;                    /* loop variable */
 long   nx, ny;               /* image size in x, y direction */ 
 float  sigma;                /* noise scale */
@@ -694,11 +827,14 @@ float  max, min;             /* largest, smallest grey value */
 float  mean;                 /* average grey value */
 float  std;                  /* standard deviation */
 char   comments[1600];       /* string for comments */
+int    stop;                 /* boolean return value */
+float  c = FLT_MAX;          /* modulus of corr. coefficient */
 
 printf ("\n");
 printf ("ISOTROPIC NONLINEAR DIFFUSION FILTERING, EXPLICIT SCHEME\n\n");
 printf ("********************************************************\n\n");
 printf ("    Copyright 2014 by Joachim Weickert                  \n");
+printf ("    and 2009 by Markus Mainberger                       \n");
 printf ("    Dept. of Mathematics and Computer Science           \n");
 printf ("    Saarland University, Saarbruecken, Germany          \n\n");
 printf ("    All rights reserved. Unauthorized usage,            \n");
@@ -713,6 +849,7 @@ printf ("********************************************************\n\n");
 printf ("input image (pgm):                       ");
 read_string (in);
 read_pgm_and_allocate_memory (in, &nx, &ny, &u);
+read_pgm_and_allocate_memory (in, &nx, &ny, &f);
 
 
 /* ---- read parameters ---- */
@@ -726,9 +863,6 @@ read_float (&sigma);
 printf ("time step size (<0.25) (float):          ");
 read_float (&ht);
 
-printf ("number of iterations (integer):          ");
-read_long (&kmax);
-
 printf ("output image (pgm):                      ");
 read_string (out);
 printf ("\n");
@@ -736,7 +870,7 @@ printf ("\n");
 
 /* ---- process image ---- */
 
-for (k=1; k<=kmax; k++)
+for (k=1; 1; k++)
     {
     /* perform one iteration */
     printf ("iteration number: %5ld \n", k);
@@ -751,6 +885,15 @@ for (k=1; k<=kmax; k++)
     printf ("maximum:       %8.2f \n", max);
     printf ("mean:          %8.2f \n", mean);
     printf ("standard dev.: %8.2f \n\n", std);
+    
+    
+    /* ---- check stopping criterion ---- */
+    
+    stop = stopping_criterion (&c, nx, ny, f, u);
+    printf ("modulus of correlation coefficient: %8.12f \n\n", c);
+    
+    if (stop)
+        break;
     }
 
 
@@ -758,12 +901,12 @@ for (k=1; k<=kmax; k++)
 
 /* generate comment string */
 comments[0]='\0';
-comment_line (comments, "# isotropic nonlinear diffusion filtering, explicit scheme\n");
+comment_line (comments, "# isotropic nonlinear diffusion, explicit scheme\n");
 comment_line (comments, "# initial image: %s\n", in);
 comment_line (comments, "# lambda:        %8.4f\n", lambda);
 comment_line (comments, "# sigma:         %8.4f\n", sigma);
 comment_line (comments, "# ht:            %8.4f\n", ht);
-comment_line (comments, "# iterations:    %8ld\n", kmax);
+comment_line (comments, "# corr. coef.:   %8.12f\n", c);
 comment_line (comments, "# min:           %8.4f\n", min);
 comment_line (comments, "# max:           %8.4f\n", max);
 comment_line (comments, "# mean:          %8.4f\n", mean);

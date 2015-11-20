@@ -1,25 +1,33 @@
-﻿Build started 12-11-2015 15:18:07.
-     1>Project "C:\Users\Pinak\Documents\Visual Studio 2013\Projects\DIC\DIC\DIC.vcxproj" on node 2 (Build target(s)).
+﻿Build started 20-11-2015 19:41:46.
+     1>Project "C:\Users\Pinak\documents\visual studio 2013\Projects\DIC\DIC\DIC.vcxproj" on node 2 (Build target(s)).
      1>ClCompile:
-         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\CL.exe /c /ZI /nologo /W3 /WX- /sdl /Od /Oy- /D _CRT_SECURE_NO_WARNINGS /D _MBCS /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Debug\\" /Fd"Debug\vc120.pdb" /Gd /TC /analyze- /errorReport:prompt isonondiff.c
-         isonondiff.c
-     1>c:\users\pinak\documents\visual studio 2013\projects\dic\dic\isonondiff.c(300): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
-     1>c:\users\pinak\documents\visual studio 2013\projects\dic\dic\isonondiff.c(386): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
-     1>c:\users\pinak\documents\visual studio 2013\projects\dic\dic\isonondiff.c(391): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
-     1>c:\users\pinak\documents\visual studio 2013\projects\dic\dic\isonondiff.c(459): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
-     1>c:\users\pinak\documents\visual studio 2013\projects\dic\dic\isonondiff.c(464): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
-     1>c:\users\pinak\documents\visual studio 2013\projects\dic\dic\isonondiff.c(569): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
-     1>c:\users\pinak\documents\visual studio 2013\projects\dic\dic\isonondiff.c(570): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
-     1>c:\users\pinak\documents\visual studio 2013\projects\dic\dic\isonondiff.c(583): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
-     1>c:\users\pinak\documents\visual studio 2013\projects\dic\dic\isonondiff.c(594): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
-     1>c:\users\pinak\documents\visual studio 2013\projects\dic\dic\isonondiff.c(613): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
-     1>c:\users\pinak\documents\visual studio 2013\projects\dic\dic\isonondiff.c(614): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
-     1>c:\users\pinak\documents\visual studio 2013\projects\dic\dic\isonondiff.c(673): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\CL.exe /c /ZI /nologo /W3 /WX- /sdl /Od /Oy- /D _CRT_SECURE_NO_WARNINGS /D _MBCS /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Debug\\" /Fd"Debug\vc120.pdb" /Gd /TC /analyze- /errorReport:prompt Ex05\ced_fed.c
+         ced_fed.c
+     1>c:\users\pinak\documents\visual studio 2013\projects\dic\dic\ex05\ced_fed.c(305): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+     1>c:\users\pinak\documents\visual studio 2013\projects\dic\dic\ex05\ced_fed.c(391): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+     1>c:\users\pinak\documents\visual studio 2013\projects\dic\dic\ex05\ced_fed.c(396): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+     1>c:\users\pinak\documents\visual studio 2013\projects\dic\dic\ex05\ced_fed.c(464): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+     1>c:\users\pinak\documents\visual studio 2013\projects\dic\dic\ex05\ced_fed.c(469): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+     1>c:\users\pinak\documents\visual studio 2013\projects\dic\dic\ex05\ced_fed.c(557): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+     1>c:\users\pinak\documents\visual studio 2013\projects\dic\dic\ex05\ced_fed.c(558): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+     1>c:\users\pinak\documents\visual studio 2013\projects\dic\dic\ex05\ced_fed.c(605): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+     1>c:\users\pinak\documents\visual studio 2013\projects\dic\dic\ex05\ced_fed.c(606): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+     1>c:\users\pinak\documents\visual studio 2013\projects\dic\dic\ex05\ced_fed.c(607): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+     1>c:\users\pinak\documents\visual studio 2013\projects\dic\dic\ex05\ced_fed.c(610): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+     1>c:\users\pinak\documents\visual studio 2013\projects\dic\dic\ex05\ced_fed.c(614): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+     1>c:\users\pinak\documents\visual studio 2013\projects\dic\dic\ex05\ced_fed.c(680): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+     1>c:\users\pinak\documents\visual studio 2013\projects\dic\dic\ex05\ced_fed.c(690): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+     1>c:\users\pinak\documents\visual studio 2013\projects\dic\dic\ex05\ced_fed.c(778): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+     1>c:\users\pinak\documents\visual studio 2013\projects\dic\dic\ex05\ced_fed.c(779): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+     1>c:\users\pinak\documents\visual studio 2013\projects\dic\dic\ex05\ced_fed.c(780): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+     1>c:\users\pinak\documents\visual studio 2013\projects\dic\dic\ex05\ced_fed.c(898): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+     1>c:\users\pinak\documents\visual studio 2013\projects\dic\dic\ex05\ced_fed.c(959): warning C4305: '=' : truncation from 'double' to 'float'
        Link:
-         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"C:\Users\Pinak\Documents\Visual Studio 2013\Projects\DIC\Debug\DIC.exe" /INCREMENTAL /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"C:\Users\Pinak\Documents\Visual Studio 2013\Projects\DIC\Debug\DIC.pdb" /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:\Users\Pinak\Documents\Visual Studio 2013\Projects\DIC\Debug\DIC.lib" /MACHINE:X86 Debug\isonondiff.obj
-         DIC.vcxproj -> C:\Users\Pinak\Documents\Visual Studio 2013\Projects\DIC\Debug\DIC.exe
-     1>Done Building Project "C:\Users\Pinak\Documents\Visual Studio 2013\Projects\DIC\DIC\DIC.vcxproj" (Build target(s)).
+         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"C:\Users\Pinak\documents\visual studio 2013\Projects\DIC\Debug\DIC.exe" /INCREMENTAL /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"C:\Users\Pinak\documents\visual studio 2013\Projects\DIC\Debug\DIC.pdb" /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:\Users\Pinak\documents\visual studio 2013\Projects\DIC\Debug\DIC.lib" /MACHINE:X86 Debug\ced_fed.obj
+     1>ced_fed.obj : error LNK2019: unresolved external symbol _fed_tau_by_process_time referenced in function _cediff
+     1>C:\Users\Pinak\documents\visual studio 2013\Projects\DIC\Debug\DIC.exe : fatal error LNK1120: 1 unresolved externals
+     1>Done Building Project "C:\Users\Pinak\documents\visual studio 2013\Projects\DIC\DIC\DIC.vcxproj" (Build target(s)) -- FAILED.
 
-Build succeeded.
+Build FAILED.
 
-Time Elapsed 00:00:00.42
+Time Elapsed 00:00:00.18

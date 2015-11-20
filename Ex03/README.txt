@@ -27,6 +27,9 @@ Lambda is a contrast parameter. It is used to decide how to penalize the gradien
 the gradient. This is used to preserve edges for longer diffusion times.
 
 c)
-Perona malik preserves edges better than chabonnier.
+Perona malik preserves edges better than chabonnier. Because diffusivity is small for the same edge and contrast parameter for perona malik
+than for chabonnier. 
 
 d)
+From the difference images we see that perona malik diffusivity preserves more edges than chabonnier diffusivity. These difference are
+calculated for same parameters.

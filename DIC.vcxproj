@@ -11,7 +11,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="isonondiff.c" />
+    <ClCompile Include="Ex05\ced_fed.c" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{8366481A-817E-4790-AB5C-739BAF5A6937}</ProjectGuid>
