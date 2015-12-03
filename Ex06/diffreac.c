@@ -3,15 +3,13 @@
 #include <string.h>
 #include <math.h>
 #include <stdarg.h>
-#include <float.h>
 
 
 /*--------------------------------------------------------------------------*/
 /*                                                                          */
-/*                 ISOTROPIC NONLINEAR DIFFUSION FILTERING                  */
-/*        with the Decorrelation Criterion by Mrazek / Navara 2003          */
+/*                 ISOTROPIC NONLINEAR DIFFUSION-REACTION                   */
 /*                                                                          */
-/*   (Copyright by Markus Mainberger, 5/2009 and Joachim Weickert, 8/2014)  */
+/*                 (Copyright by Joachim Weickert, 8/2014)                  */
 /*                                                                          */
 /*--------------------------------------------------------------------------*/
 
@@ -20,29 +18,8 @@
  features:
  - explicit scheme
  - presmoothing at noise scale:  convolution-based, Neumann b.c.
- - with the Decorrelation Criterion by Mrazek / Navara 2003 
 */
 
-
-/*--------------------------------------------------------------------------*/
-
-void alloc_vector
-
-     (float **vector,   /* vector */
-      long  n1)         /* size */
-
-     /* allocates memory for a vector of size n1 */
-
-
-{
-*vector = (float *) malloc (n1 * sizeof(float));
-if (*vector == NULL)
-   {
-   printf("alloc_vector: not enough memory available\n");
-   exit(1);
-   }
-return;
-}
 
 /*--------------------------------------------------------------------------*/
 
@@ -73,20 +50,6 @@ for (i=0; i<n1; i++)
        exit(1);
        }
     }
-return;
-}
-
-/*--------------------------------------------------------------------------*/
-
-void disalloc_vector
-
-     (float *vector,    /* vector */
-      long  n1)         /* size */
-
-     /* disallocates memory for a vector of size n1 */
-
-{
-free(vector);
 return;
 }
 
@@ -346,181 +309,6 @@ return;
 
 /*--------------------------------------------------------------------------*/
 
-void gauss_conv 
-
-     (float    sigma,     /* standard deviation of Gaussian */
-      long     nx,        /* image dimension in x direction */ 
-      long     ny,        /* image dimension in y direction */ 
-      float    hx,        /* pixel size in x direction */
-      float    hy,        /* pixel size in y direction */
-      float    precision, /* cutoff at precision * sigma */
-      long     bc,        /* type of boundary condition */
-                          /* 0=Dirichlet, 1=reflecing, 2=periodic */
-      float    **f)       /* input: original image ;  output: smoothed */
-
-/* 
- Gaussian convolution.
-*/
-
-{
-long    i, j, p;              /* loop variables */
-long    length;               /* convolution vector: 0..length */
-float   sum;                  /* for summing up */
-float   *conv;                /* convolution vector */
-float   *help;                /* row or column with dummy boundaries */
-      
-
-/* ------------------------ diffusion in x direction -------------------- */
-
-/* calculate length of convolution vector */
-length = (long)(precision * sigma / hx) + 1;
-if ((bc != 0) && (length > nx))
-   {
-   printf("gauss_conv: sigma too large \n"); 
-   exit(0);
-   }
-
-/* allocate storage for convolution vector */
-alloc_vector (&conv, length+1);
-
-/* calculate entries of convolution vector */
-for (i=0; i<=length; i++)
-    conv[i] = 1 / (sigma * sqrt(2.0 * 3.1415926)) 
-              * exp (- (i * i * hx * hx) / (2.0 * sigma * sigma));
-
-/* normalization */
-sum = conv[0];
-for (i=1; i<=length; i++)
-    sum = sum + 2.0 * conv[i];
-for (i=0; i<=length; i++)
-    conv[i] = conv[i] / sum;
-
-/* allocate storage for a row */
-alloc_vector (&help, nx+length+length);
-
-for (j=1; j<=ny; j++)
-    {
-    /* copy in row vector */
-    for (i=1; i<=nx; i++)
-        help[i+length-1] = f[i][j];
-
-    /* assign boundary conditions */
-    if (bc == 0) /* Dirichlet boundary conditions */
-       for (p=1; p<=length; p++)
-           {
-           help[length-p]      = 0.0;
-           help[nx+length-1+p] = 0.0;
-           }
-    else if (bc == 1) /* reflecting b.c. */
-       for (p=1; p<=length; p++)
-           {
-           help[length-p]      = help[length+p-1];
-           help[nx+length-1+p] = help[nx+length-p];
-           }
-    else if (bc == 2) /* periodic b.c. */
-       for (p=1; p<=length; p++)
-           {
-           help[length-p]      = help[nx+length-p];
-           help[nx+length-1+p] = help[length+p-1];
-           }
-
-    /* convolution step */
-    for (i=length; i<=nx+length-1; i++)
-        {
-        /* calculate convolution */
-        sum = conv[0] * help[i];
-        for (p=1; p<=length; p++)
-            sum = sum + conv[p] * (help[i+p] + help[i-p]);
-        /* write back */
-        f[i-length+1][j] = sum;
-        }
-    } /* for j */
-
-/* disallocate storage for a row */
-disalloc_vector (help, nx+length+length);
-
-/* disallocate convolution vector */
-disalloc_vector (conv, length + 1);
-
-
-/* ------------------------ diffusion in y direction -------------------- */
-
-/* calculate length of convolution vector */
-length = (long)(precision * sigma / hy) + 1;
-if ((bc != 0) && (length > ny))
-   {
-   printf("gauss_conv: sigma too large \n"); 
-   exit(0);
-   }
-
-/* allocate storage for convolution vector */
-alloc_vector (&conv, length + 1);
-
-/* calculate entries of convolution vector */
-for (j=0; j<=length; j++)
-    conv[j] = 1 / (sigma * sqrt(2.0 * 3.1415927)) 
-              * exp (- (j * j * hy * hy) / (2.0 * sigma * sigma));
-
-/* normalization */
-sum = conv[0];
-for (j=1; j<=length; j++)
-    sum = sum + 2.0 * conv[j];
-for (j=0; j<=length; j++)
-    conv[j] = conv[j] / sum;
-
-/* allocate storage for a row */
-alloc_vector (&help, ny+length+length);
-
-for (i=1; i<=nx; i++)
-    {
-    /* copy in column vector */
-    for (j=1; j<=ny; j++)
-        help[j+length-1] = f[i][j];
-
-    /* assign boundary conditions */
-    if (bc == 0) /* Dirichlet boundary conditions */
-       for (p=1; p<=length; p++)
-           {
-           help[length-p]      = 0.0;
-           help[ny+length-1+p] = 0.0;
-           }
-    else if (bc == 1) /* reflecting b.c. */
-       for (p=1; p<=length; p++)
-           {
-           help[length-p]      = help[length+p-1];
-           help[ny+length-1+p] = help[ny+length-p];
-           }
-    else if (bc == 2) /* periodic b.c. */
-       for (p=1; p<=length; p++)
-           {
-           help[length-p]      = help[ny+length-p];
-           help[ny+length-1+p] = help[length+p-1];
-           } 
- 
-    /* convolution step */
-    for (j=length; j<=ny+length-1; j++)
-        {
-        /* calculate convolution */
-        sum = conv[0] * help[j];
-        for (p=1; p<=length; p++)
-            sum = sum + conv[p] * (help[j+p] + help[j-p]);
-        /* write back */
-        f[i][j-length+1] = sum;
-        }
-    } /* for i */
-
-/* disallocate storage for a row */
-disalloc_vector (help, ny+length+length);
-
-/* disallocate convolution vector */
-disalloc_vector (conv, length+1);
-
-return;
-
-} /* gauss_conv */
-
-/*--------------------------------------------------------------------------*/
-
 void isonondiff 
 
      (long     nx,        /* image dimension in x direction */ 
@@ -528,28 +316,30 @@ void isonondiff
       float    ht,        /* time step size, 0 < ht < 0.25 */
       float    hx,        /* pixel size in x direction */
       float    hy,        /* pixel size in y direction */
+      float    alpha,     /* weight of the similarity term */
       float    lambda,    /* contrast parameter */
-      float    sigma,     /* noise scale */
+      float    **f,       /* initial image, unchanged */
       float    **u)       /* input: original image;  output: smoothed */
 
 /* 
- Isotropic nonlinear diffusion. 
- Explicit discretization.
+ Isotropic nonlinear diffusion / regularisation with Charbonnier diffusivity.
+ Modified explicit scheme.
 */
 
 {
 long    i, j;             /* loop variables */
 float   rxx, ryy;         /* time savers */
-float   **f;              /* work copy of u */
+float   **v;              /* work copy of u */
 float   **dc;             /* diffusion coefficient */
-float   df_dx, df_dy;     /* derivatives */
+float   dv_dx, dv_dy;     /* derivatives */
 float   two_hx, two_hy;   /* time savers */
-float   grad;             /* |grad(v)| */
+float   grad_sqr;         /* |grad(u)|^2 */
+float   help1, help2;     /* time saver */
       
 
-/* ---- allocate storage for f and dc ---- */
+/* ---- allocate storage for v and dc ---- */
 
-alloc_matrix (&f,  nx+2, ny+2);
+alloc_matrix (&v,  nx+2, ny+2);
 alloc_matrix (&dc, nx+2, ny+2);
 
 
@@ -557,50 +347,35 @@ alloc_matrix (&dc, nx+2, ny+2);
 
 for (i=1; i<=nx; i++)
  for (j=1; j<=ny; j++)
-     f[i][j] = u[i][j];
+     v[i][j] = u[i][j];
 
 
-/* ---- regularize f ---- */
+/* ---- create dummy boundaries for v by mirroring ---- */
 
-if (sigma > 0.0)
-   gauss_conv (sigma, nx, ny, hx, hy, 3.0, 1, f);
-
-
-/* ---- create dummy boundaries for f by mirroring ---- */
-
-dummies (f, nx, ny);
+dummies (v, nx, ny);
 
 /* ---- calculate diffusivity ---- */
 
 two_hx = 2.0 * hx;
 two_hy = 2.0 * hy;
+help1  = 1.0 / (lambda * lambda);
 
 for (i=1; i<=nx; i++)
  for (j=1; j<=ny; j++)
      {
-     /* calculate grad(f) */
-     df_dx = (f[i+1][j]-f[i-1][j])/two_hx;
-     df_dy = (f[i][j+1]-f[i][j-1])/two_hy;
-     grad = sqrt(df_dx*df_dx+df_dy*df_dy);
+     /* calculate grad_sqr */
+     dv_dx = (v[i+1][j] - v[i-1][j]) / two_hx;
+     dv_dy = (v[i][j+1] - v[i][j-1]) / two_hy;
+     grad_sqr = dv_dx * dv_dx + dv_dy * dv_dy;
 
      /* calculate diffusivity dc */
-
-     // Charbonnier diffusivity
-     dc[i][j] = 1.0 / sqrt(1.0 + (grad*grad) / pow(lambda,2.0) ) ;
+     dc[i][j] = 1.0 / sqrt(1.0 + help1 * grad_sqr);
      }
 
 
 /* ---- calculate explicit nonlinear diffusion of u ---- */
 
-/* copy u into f */
-for (i=1; i<=nx; i++)
- for (j=1; j<=ny; j++)
-     f[i][j] = u[i][j];
-
-
-/* ---- create dummy boundaries for f and dc by mirroring ---- */
-
-dummies (f,  nx, ny);
+/* dummy boundaries for dc by mirroring */
 dummies (dc, nx, ny);
 
 /* diffuse */
@@ -608,16 +383,31 @@ rxx = ht / (2.0 * hx * hx);
 ryy = ht / (2.0 * hy * hy);
 for (i=1; i<=nx; i++)
  for (j=1; j<=ny; j++)
-     u[i][j] = f[i][j] 
-        + rxx * ( (dc[i+1][j] + dc[i][j]) * (f[i+1][j] - f[i][j])
-                + (dc[i-1][j] + dc[i][j]) * (f[i-1][j] - f[i][j]) )
-        + ryy * ( (dc[i][j+1] + dc[i][j]) * (f[i][j+1] - f[i][j])
-                + (dc[i][j-1] + dc[i][j]) * (f[i][j-1] - f[i][j]) );
+     u[i][j] = v[i][j] 
+        + rxx * ( (dc[i+1][j] + dc[i][j]) * (v[i+1][j] - v[i][j])
+                + (dc[i-1][j] + dc[i][j]) * (v[i-1][j] - v[i][j]) )
+        + ryy * ( (dc[i][j+1] + dc[i][j]) * (v[i][j+1] - v[i][j])
+                + (dc[i][j-1] + dc[i][j]) * (v[i][j-1] - v[i][j]) );
+
+
+ 
+ help2 = alpha + ht;
+
+/* ---- blend with the original image ---- */
+for (i=1; i<=nx; i++)
+ for (j=1; j<=ny; j++)
+     {
+/*
+ SUPPLEMENT CODE
+*/
+	 u[i][j] = (alpha / help2) * u[i][j] + (ht / help2) * f[i][j];
+
+     }
 
 
 /* ---- disallocate storage for f and dc ---- */
 
-disalloc_matrix (f,  nx+2, ny+2);
+disalloc_matrix (v,  nx+2, ny+2);
 disalloc_matrix (dc, nx+2, ny+2);
 
 return;
@@ -672,187 +462,16 @@ return;
 
 /*--------------------------------------------------------------------------*/
 
-float mean
-
-     (long     nx,         /* image dimension in x direction */
-      long     ny,         /* image dimension in y direction */
-      float    **f)        /* input: image */
-
-/*
-    computes the mean of f
-*/
-
-{
-float mean = 0.0f;
-
-/*
-SUPPLEMENT CODE
-*/
-for (int i = 1; i <= nx; i++) {
-	for (int j = 1; j <= ny; j++) {
-		mean += f[i][j];
-	}
-}
-
-mean = mean / (nx*ny);
-
-return mean;
-}
-
-/* ------------------------------------------------------------------------ */
-
-float var
-
-     (long     nx,         /* image dimension in x direction */
-      long     ny,         /* image dimension in y direction */
-      float    **f)        /* input: image */
-
-/*
-    computes the variance of f
-*/
-
-{
-float var = 0.0f;
-
-/*
-SUPPLEMENT CODE
-*/
-
-float meanf = mean(nx, ny, f);
-
-for (int i = 1; i <= nx; i++) {
-	for (int j = 1; j <= ny; j++) {
-		var += (f[i][j] - meanf) * (f[i][j] - meanf);
-	}
-}
-
-var = var / (nx*ny);
-
-return var;
-}
-
-/* ------------------------------------------------------------------------ */
-
-float cov
-
-     (long     nx,         /* image dimension in x direction */
-      long     ny,         /* image dimension in y direction */
-      float    **f,        /* input: 1st image */
-      float    **g)        /* input: 2nd image */
-
-/*
-    computes the covariance of f and g
-*/
-
-{
-float cov = 0.0f;
-
-/*
-SUPPLEMENT CODE
-*/
-
-float meanf = mean(nx, ny, f), meang = mean(nx, ny, g);
-
-for (int i = 1; i <= nx; i++) {
-	for (int j = 1; j <= ny; j++) {
-		cov += (f[i][j] - meanf) * (g[i][j] - meang);
-	}
-}
-
-cov = cov / (nx*ny);
-
-return cov;
-}
-
-/* ------------------------------------------------------------------------ */
-
-float corr
-
-     (long     nx,         /* image dimension in x direction */
-      long     ny,         /* image dimension in y direction */
-      float    **f,        /* input: 1st image */
-      float    **g)        /* input: 2nd image */
-
-/*
-    computes the correlation coefficient of f and g
-*/
-
-{
-float corr = 0.0f;
-
-/*
-SUPPLEMENT CODE
-*/
-
-corr = cov(nx, ny, f, g) / (sqrt(var(nx, ny, f) * var(nx, ny, g)));
-
-return corr;
-}
-
-/* ------------------------------------------------------------------------ */
-
-int stopping_criterion
-
-     (float    *c,         /* in:  modulus of previous corr. coefficient
-                              out: modulus of new corr. coefficient */
-      long     nx,         /* image dimension in x direction */
-      long     ny,         /* image dimension in y direction */
-      float    **f,        /* input: original image */
-      float    **u)        /* input: smoothed image */
-
-/*
-    computes the modulus of the correlation coefficient between the signal f 
-    and the removed noise f-u and checks if the result is even smaller
-    than the modulus of the previous correlation coefficient
-*/
-
-{
-int    i, j;         /* loop variables */
-int    stop;         /* boolean return value */
-float  **rn;         /* removed noise */
-float  new_c;        /* modulus of correlation coefficient */
-
-alloc_matrix (&rn, nx+2, ny+2);
-
-/* compute removed noise */
-for (i=1; i<=nx; i++)
- for (j=1; j<=ny; j++)
- {
-    /*
-    SUPPLEMENT CODE
-    */
-	 rn[i][j] = f[i][j] - u[i][j];
-
- }
-
-/* get the modulus of correlation coefficient */
-/*
-SUPPLEMENT CODE
-*/
-
- new_c = fabsf(corr(nx, ny, u, rn));
-
-/* stop if modulus of new corr. coeff. is larger or equal to the prev. one */
-stop = (*c > new_c) ? 0 : 1;
-*c = new_c;
-
-disalloc_matrix (rn, nx+2, ny+2);
-
-return stop;
-}
-
-/*--------------------------------------------------------------------------*/
-
 int main ()
 
 {
 char   in[80];               /* for reading data */
 char   out[80];              /* for reading data */
-float  **u;                  /* evolving image */
-float  **f;                  /* original image */
+float  **f;                  /* initial image */
+float  **u;                  /* image */
 long   k;                    /* loop variable */
 long   nx, ny;               /* image size in x, y direction */ 
-float  sigma;                /* noise scale */
+float  alpha;                /* weight of the similarity term */
 float  lambda;               /* contrast parameter */
 float  ht;                   /* time step size, 0 < ht < 0.25 */
 long   kmax;                 /* largest iteration number */
@@ -860,14 +479,11 @@ float  max, min;             /* largest, smallest grey value */
 float  mean;                 /* average grey value */
 float  std;                  /* standard deviation */
 char   comments[1600];       /* string for comments */
-int    stop;                 /* boolean return value */
-float  c = FLT_MAX;          /* modulus of corr. coefficient */
 
 printf ("\n");
-printf ("ISOTROPIC NONLINEAR DIFFUSION FILTERING, EXPLICIT SCHEME\n\n");
+printf ("ISOTROPIC NONLINEAR DIFFUSION--REACTION, EXPLICIT SCHEME\n\n");
 printf ("********************************************************\n\n");
 printf ("    Copyright 2014 by Joachim Weickert                  \n");
-printf ("    and 2009 by Markus Mainberger                       \n");
 printf ("    Dept. of Mathematics and Computer Science           \n");
 printf ("    Saarland University, Saarbruecken, Germany          \n\n");
 printf ("    All rights reserved. Unauthorized usage,            \n");
@@ -890,11 +506,14 @@ read_pgm_and_allocate_memory (in, &nx, &ny, &f);
 printf ("contrast parameter lambda (>0) (float):  ");
 read_float (&lambda);
 
-printf ("noise scale sigma (>=0) (float):         ");
-read_float (&sigma);
+printf ("data weight alpha (>=0) (float):         ");
+read_float (&alpha);
 
 printf ("time step size (<0.25) (float):          ");
 read_float (&ht);
+
+printf ("number of iterations (integer):          ");
+read_long (&kmax);
 
 printf ("output image (pgm):                      ");
 read_string (out);
@@ -903,11 +522,11 @@ printf ("\n");
 
 /* ---- process image ---- */
 
-for (k=1; 1; k++)
+for (k=1; k<=kmax; k++)
     {
     /* perform one iteration */
     printf ("iteration number: %5ld \n", k);
-    isonondiff (nx, ny, ht, 1.0, 1.0, lambda, sigma, u);
+    isonondiff (nx, ny, ht, 1.0, 1.0, alpha, lambda, f, u);
     
     
     /* ---- analyse filtered image ---- */
@@ -918,15 +537,6 @@ for (k=1; 1; k++)
     printf ("maximum:       %8.2f \n", max);
     printf ("mean:          %8.2f \n", mean);
     printf ("standard dev.: %8.2f \n\n", std);
-    
-    
-    /* ---- check stopping criterion ---- */
-    
-    stop = stopping_criterion (&c, nx, ny, f, u);
-    printf ("modulus of correlation coefficient: %8.12f \n\n", c);
-    
-    if (stop)
-        break;
     }
 
 
@@ -934,12 +544,12 @@ for (k=1; 1; k++)
 
 /* generate comment string */
 comments[0]='\0';
-comment_line (comments, "# isotropic nonlinear diffusion, explicit scheme\n");
+comment_line (comments, "# isotropic nonlinear diffusion--reaction, explicit scheme\n");
 comment_line (comments, "# initial image: %s\n", in);
 comment_line (comments, "# lambda:        %8.4f\n", lambda);
-comment_line (comments, "# sigma:         %8.4f\n", sigma);
+comment_line (comments, "# alpha:         %8.4f\n", alpha);
 comment_line (comments, "# ht:            %8.4f\n", ht);
-comment_line (comments, "# corr. coef.:   %8.12f\n", c);
+comment_line (comments, "# iterations:    %8ld\n", kmax);
 comment_line (comments, "# min:           %8.4f\n", min);
 comment_line (comments, "# max:           %8.4f\n", max);
 comment_line (comments, "# mean:          %8.4f\n", mean);
@@ -953,6 +563,7 @@ printf ("output image %s successfully written\n\n", out);
 /* ---- free memory  ---- */
 
 disalloc_matrix (u, nx+2, ny+2);
-getchar();
+disalloc_matrix (f, nx+2, ny+2);
+
 return(0);
 }

@@ -1,33 +1,27 @@
-﻿Build started 20-11-2015 19:41:46.
+﻿Build started 26-11-2015 14:41:47.
      1>Project "C:\Users\Pinak\documents\visual studio 2013\Projects\DIC\DIC\DIC.vcxproj" on node 2 (Build target(s)).
      1>ClCompile:
-         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\CL.exe /c /ZI /nologo /W3 /WX- /sdl /Od /Oy- /D _CRT_SECURE_NO_WARNINGS /D _MBCS /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Debug\\" /Fd"Debug\vc120.pdb" /Gd /TC /analyze- /errorReport:prompt Ex05\ced_fed.c
-         ced_fed.c
-     1>c:\users\pinak\documents\visual studio 2013\projects\dic\dic\ex05\ced_fed.c(305): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
-     1>c:\users\pinak\documents\visual studio 2013\projects\dic\dic\ex05\ced_fed.c(391): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
-     1>c:\users\pinak\documents\visual studio 2013\projects\dic\dic\ex05\ced_fed.c(396): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
-     1>c:\users\pinak\documents\visual studio 2013\projects\dic\dic\ex05\ced_fed.c(464): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
-     1>c:\users\pinak\documents\visual studio 2013\projects\dic\dic\ex05\ced_fed.c(469): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
-     1>c:\users\pinak\documents\visual studio 2013\projects\dic\dic\ex05\ced_fed.c(557): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
-     1>c:\users\pinak\documents\visual studio 2013\projects\dic\dic\ex05\ced_fed.c(558): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
-     1>c:\users\pinak\documents\visual studio 2013\projects\dic\dic\ex05\ced_fed.c(605): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
-     1>c:\users\pinak\documents\visual studio 2013\projects\dic\dic\ex05\ced_fed.c(606): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
-     1>c:\users\pinak\documents\visual studio 2013\projects\dic\dic\ex05\ced_fed.c(607): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
-     1>c:\users\pinak\documents\visual studio 2013\projects\dic\dic\ex05\ced_fed.c(610): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
-     1>c:\users\pinak\documents\visual studio 2013\projects\dic\dic\ex05\ced_fed.c(614): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
-     1>c:\users\pinak\documents\visual studio 2013\projects\dic\dic\ex05\ced_fed.c(680): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
-     1>c:\users\pinak\documents\visual studio 2013\projects\dic\dic\ex05\ced_fed.c(690): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
-     1>c:\users\pinak\documents\visual studio 2013\projects\dic\dic\ex05\ced_fed.c(778): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
-     1>c:\users\pinak\documents\visual studio 2013\projects\dic\dic\ex05\ced_fed.c(779): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
-     1>c:\users\pinak\documents\visual studio 2013\projects\dic\dic\ex05\ced_fed.c(780): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
-     1>c:\users\pinak\documents\visual studio 2013\projects\dic\dic\ex05\ced_fed.c(898): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
-     1>c:\users\pinak\documents\visual studio 2013\projects\dic\dic\ex05\ced_fed.c(959): warning C4305: '=' : truncation from 'double' to 'float'
+         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\CL.exe /c /ZI /nologo /W3 /WX- /sdl /Od /Oy- /D _CRT_SECURE_NO_WARNINGS /D _MBCS /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Debug\\" /Fd"Debug\vc120.pdb" /Gd /TC /analyze- /errorReport:prompt Ex05\isonondiff.c
+         isonondiff.c
+     1>c:\users\pinak\documents\visual studio 2013\projects\dic\dic\ex05\isonondiff.c(303): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+     1>c:\users\pinak\documents\visual studio 2013\projects\dic\dic\ex05\isonondiff.c(389): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+     1>c:\users\pinak\documents\visual studio 2013\projects\dic\dic\ex05\isonondiff.c(394): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+     1>c:\users\pinak\documents\visual studio 2013\projects\dic\dic\ex05\isonondiff.c(462): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+     1>c:\users\pinak\documents\visual studio 2013\projects\dic\dic\ex05\isonondiff.c(467): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+     1>c:\users\pinak\documents\visual studio 2013\projects\dic\dic\ex05\isonondiff.c(575): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+     1>c:\users\pinak\documents\visual studio 2013\projects\dic\dic\ex05\isonondiff.c(576): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+     1>c:\users\pinak\documents\visual studio 2013\projects\dic\dic\ex05\isonondiff.c(584): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+     1>c:\users\pinak\documents\visual studio 2013\projects\dic\dic\ex05\isonondiff.c(589): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+     1>c:\users\pinak\documents\visual studio 2013\projects\dic\dic\ex05\isonondiff.c(607): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+     1>c:\users\pinak\documents\visual studio 2013\projects\dic\dic\ex05\isonondiff.c(608): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+     1>c:\users\pinak\documents\visual studio 2013\projects\dic\dic\ex05\isonondiff.c(667): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+     1>c:\users\pinak\documents\visual studio 2013\projects\dic\dic\ex05\isonondiff.c(787): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+     1>c:\users\pinak\documents\visual studio 2013\projects\dic\dic\ex05\isonondiff.c(858): warning C4101: 'kmax' : unreferenced local variable
        Link:
-         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"C:\Users\Pinak\documents\visual studio 2013\Projects\DIC\Debug\DIC.exe" /INCREMENTAL /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"C:\Users\Pinak\documents\visual studio 2013\Projects\DIC\Debug\DIC.pdb" /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:\Users\Pinak\documents\visual studio 2013\Projects\DIC\Debug\DIC.lib" /MACHINE:X86 Debug\ced_fed.obj
-     1>ced_fed.obj : error LNK2019: unresolved external symbol _fed_tau_by_process_time referenced in function _cediff
-     1>C:\Users\Pinak\documents\visual studio 2013\Projects\DIC\Debug\DIC.exe : fatal error LNK1120: 1 unresolved externals
-     1>Done Building Project "C:\Users\Pinak\documents\visual studio 2013\Projects\DIC\DIC\DIC.vcxproj" (Build target(s)) -- FAILED.
+         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"C:\Users\Pinak\documents\visual studio 2013\Projects\DIC\Debug\DIC.exe" /INCREMENTAL /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"C:\Users\Pinak\documents\visual studio 2013\Projects\DIC\Debug\DIC.pdb" /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:\Users\Pinak\documents\visual studio 2013\Projects\DIC\Debug\DIC.lib" /MACHINE:X86 Debug\isonondiff.obj
+         DIC.vcxproj -> C:\Users\Pinak\documents\visual studio 2013\Projects\DIC\Debug\DIC.exe
+     1>Done Building Project "C:\Users\Pinak\documents\visual studio 2013\Projects\DIC\DIC\DIC.vcxproj" (Build target(s)).
 
-Build FAILED.
+Build succeeded.
 
-Time Elapsed 00:00:00.18
+Time Elapsed 00:00:00.63
