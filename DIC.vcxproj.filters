@@ -15,7 +15,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Ex06\diffreac.c">
+    <ClCompile Include="Ex07\tv-fista.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
