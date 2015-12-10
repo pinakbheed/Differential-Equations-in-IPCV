@@ -15,7 +15,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Ex07\tv-fista.c">
+    <ClCompile Include="Ex07\tv-fbs.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
